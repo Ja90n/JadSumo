@@ -7,5 +7,4 @@ public class Main {
         new Server();
         System.out.println("Server started!");
     }
-
 }
