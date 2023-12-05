@@ -26,13 +26,13 @@ public class StartCountDown {
             if (countdownSeconds <= 0) {
                 game.start();
                 task.cancel();
+                return;
             }
 
-            game.sendTitle(Component.text("Game starting in ", TextColor.color(72, 128, 152))
-                    .append(Component.text(String.valueOf(countdownSeconds),TextColor.color(255, 255, 255)))
-                    .append(Component.text(" second",TextColor.color(72, 128, 152)))
-                    .append(Component.text(countdownSeconds == 1 ? "" : "s",TextColor.color(72, 128, 152))
-                            .append(Component.text("!",TextColor.color(72, 128, 152)))),Component.text(""));
+            game.sendTitle(Component.text("Game starting in ", TextColor.color(58, 55, 152)),
+                    Component.text(String.valueOf(countdownSeconds),TextColor.color(255, 255, 255))
+                    .append(Component.text(" second",TextColor.color(58, 55, 152)))
+                    .append(Component.text(countdownSeconds == 1 ? "" : "s",TextColor.color(58, 55, 152))));
 
             countdownSeconds--;
         }, TaskSchedule.tick(1),TaskSchedule.tick(20));

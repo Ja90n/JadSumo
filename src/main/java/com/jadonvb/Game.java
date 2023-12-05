@@ -1,12 +1,15 @@
 package com.jadonvb;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
@@ -22,15 +25,43 @@ public class Game {
     private Server server;
     private HashMap<UUID, Integer> points;
     private StartCountDown startCountDown;
+    private Task actionBarTask;
 
 
     public Game(Server server, InstanceContainer container) {
-        gameState = GameState.RECRUITING;
+        setGameState(GameState.RECRUITING);
         this.server = server;
         this.container = container;
         players = new ArrayList<>();
         points = new HashMap<>();
         startCountDown = new StartCountDown(this);
+    }
+
+    public void start() {
+        setGameState(GameState.LIVE);
+
+        for (Player player : players) {
+            points.put(player.getUuid(),0);
+        }
+
+        startActionBarTast();
+        teleportPlayers();
+    }
+
+    public void stop() {
+        for (Player player : players.get(0).getInstance().getPlayers()) {
+            player.kick(Component.text("Game concluded", TextColor.color(107, 242, 255)));
+            System.out.println("kicked" + player.getUsername());
+        }
+
+        actionBarTask.cancel();
+
+        Scheduler scheduler = MinecraftServer.getSchedulerManager();
+        scheduler.scheduleNextTick(() -> {
+            System.out.println("ënding server");
+            MinecraftServer.stopCleanly();
+            System.out.println("ënding done");
+        });
     }
 
     public void addPlayer(Player player) {
@@ -58,28 +89,38 @@ public class Game {
     }
 
     public void replayRound(Player player) {
-        if (points.containsKey(player.getUuid())) {
-            points.put(player.getUuid(),points.get(player.getUuid()) + 1);
-        } else {
-            points.put(player.getUuid(),1);
-        }
+
+        points.put(player.getUuid(),points.get(player.getUuid()) + 1);
 
         for (UUID playerUUID : points.keySet()) {
-            if (points.containsKey(playerUUID)) {
-                if (points.get(playerUUID) >= 5) {
-                    new StopCountdown(this, playerUUID);
-                }
-            } else {
-                points.put(playerUUID,1);
+            if (points.get(playerUUID) >= 5) {
+                new StopCountdown(this, playerUUID);
             }
         }
 
-        players.get(0).teleport(new Pos(0.5, 10, -3.5,0,0));
-        players.get(1).teleport(new Pos(0.5, 10, 4.5,180,0));
+
+
+        teleportPlayers();
+    }
+
+    public void startActionBarTast() {
+        actionBarTask = MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+
+            Audiences.players().sendActionBar(
+            Component.text(players.get(0).getUsername())
+            .append(Component.text(": ")
+            .append(Component.text(points.get(players.get(0).getUuid()))))
+            .append(Component.text(" | "))
+            .append(Component.text(players.get(1).getUsername())
+            .append(Component.text(": ")
+            .append(Component.text(points.get(players.get(1).getUuid()))))));
+
+        },TaskSchedule.tick(0),TaskSchedule.tick(10));
     }
 
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
+        System.out.println(gameState);
     }
 
     public void sendTitle(Component title1, Component title2) {
@@ -88,18 +129,11 @@ public class Game {
         }
     }
 
-    public void start() {
-        gameState = GameState.LIVE;
+    private void teleportPlayers() {
         players.get(0).teleport(new Pos(0.5, 10, -3.5,0,0));
         players.get(1).teleport(new Pos(0.5, 10, 4.5,180,0));
     }
 
-    public void stop() {
-        for (Player player : players.get(0).getInstance().getPlayers()) {
-            player.kick(Component.text("ggs"));
-            System.out.println("kicked" + player.getUsername());
-        }
-    }
 
     public ArrayList<Player> getPlayers() {
         return players;

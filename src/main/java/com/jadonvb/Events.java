@@ -54,9 +54,11 @@ public class Events {
     private void loginEvent() {
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
+
             player.setGameMode(GameMode.ADVENTURE);
             event.setSpawningInstance(container);
-            player.setRespawnPoint(new Pos(0.5, 10, -3.5,0,0));
+            player.setRespawnPoint(new Pos(0.5, 10, 0.5,0,0));
+
             System.out.println(player.getUsername() + " has joined the game!");
             Audiences.players().sendMessage(player.getName().append(Component.text(" has joined the game!", TextColor.color(248, 200, 220))));
 
@@ -67,11 +69,6 @@ public class Events {
     private void disconnectEvent() {
         globalEventHandler.addListener(PlayerDisconnectEvent.class, event -> {
             final Player player = event.getPlayer();
-
-            if (player.getInstance().getPlayers().size() >= 2) {
-                player.kick("oepsie");
-                return;
-            }
 
             System.out.println(player.getUsername() + " has left the game!");
             Audiences.players().sendMessage(player.getName().append(Component.text(" has left the game!", TextColor.color(255, 49, 49))));
@@ -92,18 +89,23 @@ public class Events {
     private void moveEvent() {
         globalEventHandler.addListener(PlayerMoveEvent.class, event -> {
             final Player player = event.getPlayer();
-            if (player.getPosition().y() < 0) {
-                if (game.getGameState().equals(GameState.LIVE)) {
-                    if (game.getPlayers().size() == 2) {
-                        for (Player player2 : game.getPlayers()) {
-                            if (!player2.equals(player)) {
-                                game.replayRound(player);
-                            }
-                        }
-                    } else {
-                        player.teleport(new Pos(0.5, 10, 0.5,0,0));
+            if (player.getPosition().y() > 0) {
+                return;
+            }
+
+            if (!game.getGameState().equals(GameState.LIVE)) {
+                player.teleport(new Pos(0.5, 10, 0.5,0,0));
+                return;
+            }
+
+            if (game.getPlayers().size() == 2) {
+                for (Player winner : game.getPlayers()) {
+                    if (!(winner.equals(player))) {
+                        game.replayRound(winner);
                     }
                 }
+            } else{
+                System.out.println("huh???");
             }
         });
     }

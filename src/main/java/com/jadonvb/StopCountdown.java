@@ -32,7 +32,7 @@ public class StopCountdown {
 
             game.sendTitle(Component.text(player.getUsername())
                     .append(Component.text(" has won the game!", TextColor.color(255, 137, 217))),
-                    Component.text("Thank you for playing",TextColor.color(139, 134, 134)));
+                    Component.text("Thank you for playing",TextColor.color(226, 221, 221)));
 
             if (countdownSeconds <= 0) {
                 game.stop();
