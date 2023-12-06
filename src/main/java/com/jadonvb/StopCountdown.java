@@ -11,16 +11,16 @@ import java.util.UUID;
 
 public class StopCountdown {
 
-    private Game game;
+    private final Game game;
     private Task task;
     private int countdownSeconds;
-    private Player player;
+    private final Player player;
 
     public StopCountdown(Game game, UUID playerUuid) {
         this.game = game;
 
         player = MinecraftServer.getConnectionManager().getPlayer(playerUuid);
-        countdownSeconds = 5;
+        countdownSeconds = 3;
         start();
     }
 
@@ -32,7 +32,7 @@ public class StopCountdown {
 
             game.sendTitle(Component.text(player.getUsername())
                     .append(Component.text(" has won the game!", TextColor.color(255, 137, 217))),
-                    Component.text("Thank you for playing",TextColor.color(226, 221, 221)));
+                    Component.text("Thank you for playing!",TextColor.color(226, 221, 221)));
 
             if (countdownSeconds <= 0) {
                 game.stop();

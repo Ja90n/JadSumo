@@ -40,14 +40,17 @@ public class Events {
 
     private void hitEvent() {
         globalEventHandler.addListener(EntityAttackEvent.class, event -> {
-            final Entity source = event.getEntity();
-            final Entity entity = event.getTarget();
+            final Player source = (Player) event.getEntity();
+            final Player target = (Player) event.getTarget();
 
-            entity.takeKnockback(0.34f, Math.sin(source.getPosition().yaw() * 0.017453292), -Math.cos(source.getPosition().yaw() * 0.017453292));
-
-            if (entity instanceof Player target) {
-                target.damage(DamageType.fromEntity(source), 0);
+            if (!(game.getPlayers().contains(source) && game.getPlayers().contains(target))) {
+                return;
             }
+
+            target.takeKnockback(0.34f, Math.sin(source.getPosition().yaw() * 0.017453292), -Math.cos(source.getPosition().yaw() * 0.017453292));
+
+            target.damage(DamageType.fromEntity(source), 0);
+
         });
     }
 
@@ -90,6 +93,10 @@ public class Events {
         globalEventHandler.addListener(PlayerMoveEvent.class, event -> {
             final Player player = event.getPlayer();
             if (player.getPosition().y() > 0) {
+                return;
+            }
+
+            if (!game.getPlayers().contains(player)) {
                 return;
             }
 

@@ -25,7 +25,7 @@ public class Server {
         // Start the server
         minecraftServer.start("0.0.0.0", 25566);
 
-        Game game = new Game(this, instanceContainer);
+        Game game = new Game();
 
         new Events(MinecraftServer.getGlobalEventHandler(), instanceContainer, game);
     }

@@ -8,30 +8,27 @@ import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.scoreboard.TabList;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.time.Duration;
+import java.util.*;
 
 public class Game {
 
     private GameState gameState;
-    private InstanceContainer container;
-    private ArrayList<Player> players;
-    private Server server;
-    private HashMap<UUID, Integer> points;
-    private StartCountDown startCountDown;
+    private final ArrayList<Player> players;
+    private final ArrayList<Player> spectators;
+    private final HashMap<UUID, Integer> points;
+    private final StartCountDown startCountDown;
     private Task actionBarTask;
 
 
-    public Game(Server server, InstanceContainer container) {
+    public Game() {
         setGameState(GameState.RECRUITING);
-        this.server = server;
-        this.container = container;
+        spectators = new ArrayList<>();
         players = new ArrayList<>();
         points = new HashMap<>();
         startCountDown = new StartCountDown(this);
@@ -44,27 +41,45 @@ public class Game {
             points.put(player.getUuid(),0);
         }
 
-        startActionBarTast();
+        sendTitle(Component.text(" "),Component.text(" "));
+
+        startActionBarTask();
         teleportPlayers();
     }
 
     public void stop() {
-        for (Player player : players.get(0).getInstance().getPlayers()) {
+        for (Player player : getAllPlayers()) {
             player.kick(Component.text("Game concluded", TextColor.color(107, 242, 255)));
-            System.out.println("kicked" + player.getUsername());
         }
 
         actionBarTask.cancel();
 
         Scheduler scheduler = MinecraftServer.getSchedulerManager();
         scheduler.scheduleNextTick(() -> {
-            System.out.println("ënding server");
             MinecraftServer.stopCleanly();
-            System.out.println("ënding done");
+            System.out.println("Server ended");
         });
+
+        System.exit(0);
     }
 
     public void addPlayer(Player player) {
+
+
+
+        if (players.size() >= 2) {
+            spectators.add(player);
+            player.setGameMode(GameMode.SPECTATOR);
+            player.setAllowFlying(true);
+            player.setFlying(true);
+
+            player.setAutoViewable(false);
+            return;
+
+        }
+
+        player.setAutoViewable(true);
+
         players.add(player);
 
         player.setGameMode(GameMode.ADVENTURE);
@@ -79,13 +94,33 @@ public class Game {
     }
 
     public void removePlayer(Player player) {
-        players.remove(player);
+        if (players.contains(player)) {
+            players.remove(player);
 
-        if (gameState == GameState.COUNTDOWN) {
-            if (players.size() <= 1) {
-                startCountDown.cancel();
+            if (!(players.size() <= 1)) {
+               return;
             }
+
+            if (gameState == GameState.COUNTDOWN) {
+                startCountDown.cancel();
+                setGameState(GameState.RECRUITING);
+
+                if (!spectators.isEmpty()) {
+                    Player spectator = spectators.get(0);
+                    spectators.remove(spectator);
+                    addPlayer(spectator);
+                }
+                return;
+            }
+
+            if (gameState == GameState.LIVE) {
+                new StopCountdown(this,players.get(0).getUuid());
+                return;
+            }
+            return;
         }
+
+        spectators.remove(player);
     }
 
     public void replayRound(Player player) {
@@ -98,24 +133,24 @@ public class Game {
             }
         }
 
-
-
         teleportPlayers();
     }
 
-    public void startActionBarTast() {
+    public void startActionBarTask() {
         actionBarTask = MinecraftServer.getSchedulerManager().scheduleTask(() -> {
 
-            Audiences.players().sendActionBar(
-            Component.text(players.get(0).getUsername())
-            .append(Component.text(": ")
-            .append(Component.text(points.get(players.get(0).getUuid()))))
-            .append(Component.text(" | "))
-            .append(Component.text(players.get(1).getUsername())
-            .append(Component.text(": ")
-            .append(Component.text(points.get(players.get(1).getUuid()))))));
+            try {
+                Audiences.players().sendActionBar(
+                        Component.text(players.get(0).getUsername())
+                        .append(Component.text(": ")
+                        .append(Component.text(points.get(players.get(0).getUuid()))))
+                        .append(Component.text(" | "))
+                        .append(Component.text(players.get(1).getUsername())
+                        .append(Component.text(": ")
+                        .append(Component.text(points.get(players.get(1).getUuid()))))));
+            } catch (IndexOutOfBoundsException ignored) {}
 
-        },TaskSchedule.tick(0),TaskSchedule.tick(10));
+        },TaskSchedule.tick(1),TaskSchedule.tick(10));
     }
 
     public void setGameState(GameState gameState) {
@@ -124,9 +159,18 @@ public class Game {
     }
 
     public void sendTitle(Component title1, Component title2) {
-        for (Player player : players) {
-            player.showTitle(Title.title(title1,title2));
+        for (Player player : getAllPlayers()) {
+            player.showTitle(Title.title(title1,title2,
+                    Title.Times.times(Duration.ofSeconds(0),Duration.ofSeconds(2),Duration.ofMillis(200))));
         }
+    }
+
+    private Set<Player> getAllPlayers() {
+        Player player = players.get(0);
+        assert player != null;
+        assert player.getInstance() != null;
+
+        return player.getInstance().getPlayers();
     }
 
     private void teleportPlayers() {

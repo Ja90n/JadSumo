@@ -8,7 +8,7 @@ import net.minestom.server.timer.TaskSchedule;
 
 public class StartCountDown {
 
-    private Game game;
+    private final Game game;
     private Task task;
     private int countdownSeconds;
 
@@ -39,6 +39,7 @@ public class StartCountDown {
     }
 
     public void cancel() {
+        countdownSeconds = 8;
         task.cancel();
     }
 
