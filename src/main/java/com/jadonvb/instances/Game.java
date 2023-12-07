@@ -1,5 +1,8 @@
-package com.jadonvb;
+package com.jadonvb.instances;
 
+import com.jadonvb.GameState;
+import com.jadonvb.countdowns.StartCountDown;
+import com.jadonvb.countdowns.StopCountdown;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
@@ -8,7 +11,6 @@ import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.scoreboard.TabList;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
@@ -24,13 +26,15 @@ public class Game {
     private final HashMap<UUID, Integer> points;
     private final StartCountDown startCountDown;
     private Task actionBarTask;
+    private final Server server;
 
 
-    public Game() {
+    public Game(Server server) {
         setGameState(GameState.RECRUITING);
         spectators = new ArrayList<>();
         players = new ArrayList<>();
         points = new HashMap<>();
+        this.server = server;
         startCountDown = new StartCountDown(this);
     }
 
@@ -65,8 +69,6 @@ public class Game {
 
     public void addPlayer(Player player) {
 
-
-
         if (players.size() >= 2) {
             spectators.add(player);
             player.setGameMode(GameMode.SPECTATOR);
@@ -75,7 +77,6 @@ public class Game {
 
             player.setAutoViewable(false);
             return;
-
         }
 
         player.setAutoViewable(true);
@@ -166,11 +167,7 @@ public class Game {
     }
 
     private Set<Player> getAllPlayers() {
-        Player player = players.get(0);
-        assert player != null;
-        assert player.getInstance() != null;
-
-        return player.getInstance().getPlayers();
+        return server.getInstanceContainer().getPlayers();
     }
 
     private void teleportPlayers() {

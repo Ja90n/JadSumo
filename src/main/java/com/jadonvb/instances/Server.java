@@ -1,4 +1,4 @@
-package com.jadonvb;
+package com.jadonvb.instances;
 
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.extras.MojangAuth;
@@ -10,6 +10,8 @@ import java.nio.file.Path;
 
 public class Server {
 
+    private InstanceContainer instanceContainer;
+
     public Server() {
         startServer();
     }
@@ -18,15 +20,19 @@ public class Server {
         MinecraftServer minecraftServer = MinecraftServer.init();
 
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-        InstanceContainer instanceContainer = instanceManager.createInstanceContainer(new AnvilLoader(Path.of("SimpleSumo")));
+        instanceContainer = instanceManager.createInstanceContainer(new AnvilLoader(Path.of("SimpleSumo")));
 
         MojangAuth.init();
 
         // Start the server
         minecraftServer.start("0.0.0.0", 25566);
 
-        Game game = new Game();
+        Game game = new Game(this);
 
         new Events(MinecraftServer.getGlobalEventHandler(), instanceContainer, game);
+    }
+
+    public InstanceContainer getInstanceContainer() {
+        return instanceContainer;
     }
 }

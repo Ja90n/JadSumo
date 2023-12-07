@@ -1,10 +1,10 @@
-package com.jadonvb;
+package com.jadonvb.instances;
 
+import com.jadonvb.GameState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.damage.DamageType;
@@ -47,7 +47,7 @@ public class Events {
                 return;
             }
 
-            target.takeKnockback(0.34f, Math.sin(source.getPosition().yaw() * 0.017453292), -Math.cos(source.getPosition().yaw() * 0.017453292));
+            target.takeKnockback(0.3f, Math.sin(source.getPosition().yaw() * 0.017453292), -Math.cos(source.getPosition().yaw() * 0.017453292));
 
             target.damage(DamageType.fromEntity(source), 0);
 

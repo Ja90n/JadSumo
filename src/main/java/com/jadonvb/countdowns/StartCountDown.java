@@ -1,5 +1,7 @@
-package com.jadonvb;
+package com.jadonvb.countdowns;
 
+import com.jadonvb.instances.Game;
+import com.jadonvb.GameState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.MinecraftServer;
