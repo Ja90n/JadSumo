@@ -91,7 +91,6 @@ public class Game {
                 startCountDown.start();
             }
         }
-        System.out.println(players.size());
     }
 
     public void removePlayer(Player player) {
@@ -133,6 +132,8 @@ public class Game {
                 new StopCountdown(this, playerUUID);
             }
         }
+
+        System.out.println(player.getUsername() + " won a round!");
 
         teleportPlayers();
     }
