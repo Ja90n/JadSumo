@@ -1,6 +1,7 @@
 package com.jadonvb.instances;
 
 import com.jadonvb.GameState;
+import com.jadonvb.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.adventure.audience.Audiences;
@@ -21,11 +22,13 @@ public class Events {
     private final GlobalEventHandler globalEventHandler;
     private final InstanceContainer container;
     private final Game game;
+    private final Logger logger;
 
     public Events(GlobalEventHandler globalEventHandler, InstanceContainer container, Game game) {
         this.globalEventHandler = globalEventHandler;
         this.container = container;
         this.game = game;
+        logger = new Logger("JadSumo");
 
         startEvents();
     }
@@ -62,7 +65,7 @@ public class Events {
             event.setSpawningInstance(container);
             player.setRespawnPoint(new Pos(0.5, 10, 0.5,0,0));
 
-            System.out.println(player.getUsername() + " has joined the game!");
+            logger.log(player.getUsername() + " has joined the game!");
             Audiences.players().sendMessage(player.getName().append(Component.text(" has joined the game!", TextColor.color(248, 200, 220))));
 
             game.addPlayer(player);
@@ -73,7 +76,7 @@ public class Events {
         globalEventHandler.addListener(PlayerDisconnectEvent.class, event -> {
             final Player player = event.getPlayer();
 
-            System.out.println(player.getUsername() + " has left the game!");
+            logger.log(player.getUsername() + " has left the game!");
             Audiences.players().sendMessage(player.getName().append(Component.text(" has left the game!", TextColor.color(255, 49, 49))));
 
             game.removePlayer(player);
@@ -84,8 +87,11 @@ public class Events {
         globalEventHandler.addListener(PlayerChatEvent.class, event -> {
             final Player player = event.getPlayer();
             event.setCancelled(true);
-            Audiences.players().sendMessage(Component.text(player.getUsername(),TextColor.color(248, 200, 220)).append(Component.text(": ")).append(Component.text(event.getMessage(),TextColor.color(255,255,255))));
-            System.out.println(player.getUsername() + ": " + event.getMessage());
+            Audiences.players().sendMessage(Component.text(player.getUsername(),TextColor.color(248, 200, 220))
+            .append(Component.text(": "))
+            .append(Component.text(event.getMessage(),TextColor.color(255,255,255))));
+
+            logger.log(player.getUsername() + ": " + event.getMessage());
         });
     }
 
@@ -112,7 +118,8 @@ public class Events {
                     }
                 }
             } else{
-                System.out.println("huh???");
+                logger.error("dit zou niet moeten gebeuren oeps");
+                System.exit(400);
             }
         });
     }

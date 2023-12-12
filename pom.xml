@@ -72,6 +72,11 @@
             <artifactId>minestom-ce</artifactId>
             <version>438338381e</version>
         </dependency>
+        <dependency>
+            <groupId>com.jadonvb</groupId>
+            <artifactId>JadLog</artifactId>
+            <version>0.0.1</version>
+        </dependency>
     </dependencies>
 
 </project>

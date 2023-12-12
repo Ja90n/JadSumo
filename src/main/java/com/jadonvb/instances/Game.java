@@ -1,6 +1,7 @@
 package com.jadonvb.instances;
 
 import com.jadonvb.GameState;
+import com.jadonvb.Logger;
 import com.jadonvb.countdowns.StartCountDown;
 import com.jadonvb.countdowns.StopCountdown;
 import net.kyori.adventure.text.Component;
@@ -27,9 +28,11 @@ public class Game {
     private final StartCountDown startCountDown;
     private Task actionBarTask;
     private final Server server;
+    private final Logger logger;
 
 
     public Game(Server server) {
+        logger = new Logger("JadSumo");
         setGameState(GameState.RECRUITING);
         spectators = new ArrayList<>();
         players = new ArrayList<>();
@@ -61,7 +64,7 @@ public class Game {
         Scheduler scheduler = MinecraftServer.getSchedulerManager();
         scheduler.scheduleNextTick(() -> {
             MinecraftServer.stopCleanly();
-            System.out.println("Server ended");
+            logger.log("Server ended!");
         });
 
         System.exit(0);
@@ -133,7 +136,7 @@ public class Game {
             }
         }
 
-        System.out.println(player.getUsername() + " won a round!");
+        logger.log(player.getUsername() + " won a round!");
 
         teleportPlayers();
     }
@@ -157,7 +160,7 @@ public class Game {
 
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
-        System.out.println(gameState);
+        logger.log(gameState.name());
     }
 
     public void sendTitle(Component title1, Component title2) {

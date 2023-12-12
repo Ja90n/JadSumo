@@ -7,6 +7,7 @@ public class Main {
     public static void main(String[] args) {
 
         new Server();
-        System.out.println("Server started!");
+        Logger logger = new Logger("JadSumo");
+        logger.log("Server started!");
     }
 }
