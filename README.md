@@ -1,2 +1,2 @@
 # JadSumo
-A simple sudo game build with minestom
+A simple sumo game build with minestom
