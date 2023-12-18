@@ -1,9 +1,6 @@
 package com.jadonvb.instances;
 
-import com.jadonvb.Client;
-import com.jadonvb.Logger;
-import com.jadonvb.Message;
-import com.jadonvb.MessageTypes;
+import com.jadonvb.*;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.extras.velocity.VelocityProxy;
 import net.minestom.server.instance.AnvilLoader;
@@ -18,15 +15,18 @@ import java.nio.file.Path;
 public class Server {
 
     private InstanceContainer instanceContainer;
-    private Client client;
+    private final Client client;
     private int port;
-    private Logger logger;
+    private final Logger logger;
     private String ip;
+    private MessageHandler messageHandler;
 
     public Server() {
         logger = new Logger("JadSumo");
-        client = new Client();
-        port = getAssignedPort();
+        client = new Client(ServerType.GAME);
+        messageHandler = new MessageHandler(this);
+        getAssignedPort();
+        port = -1;
     }
 
     private String getIP() {
@@ -45,11 +45,11 @@ public class Server {
         return null;
     }
 
-    private int getAssignedPort() {
+    private void getAssignedPort() {
 
         String ip = getIP();
         if (getIP() == null) {
-            return -1;
+            return;
         }
 
         Message message = new Message();
@@ -58,8 +58,6 @@ public class Server {
         message.setReceiver("velocity");
 
         client.sendMessage(message);
-
-        return 0;
     }
 
     public void startServer() {
@@ -72,6 +70,8 @@ public class Server {
 
         // Start the server
         minecraftServer.start("0.0.0.0", port);
+
+        logger.log("Hi guys");
 
         Game game = new Game(this);
 

@@ -12,6 +12,8 @@ public class MessageHandler implements MessageListener {
 
     @Override
     public void getMessage(Message message) {
+        Logger logger =  new Logger("JadSumo");
+        logger.log("hoihoi");
         switch (message.getType()) {
             case PORT_REQUEST -> {
                 if (!message.getReceiver().equals(server.getIp())) {
