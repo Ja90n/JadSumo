@@ -8,6 +8,6 @@ public class Main {
 
         new Server();
         Logger logger = new Logger("JadSumo");
-        logger.log("Server started!");
+        logger.log("Hoihoi");
     }
 }

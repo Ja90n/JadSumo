@@ -25,6 +25,7 @@ public class Server {
         logger = new Logger("JadSumo");
         client = new Client(ServerType.GAME);
         messageHandler = new MessageHandler(this);
+        client.addMessageListener(messageHandler);
         getAssignedPort();
         port = -1;
     }
@@ -57,10 +58,13 @@ public class Server {
         message.setSender(ip);
         message.setReceiver("velocity");
 
+        logger.log("Asked for port");
         client.sendMessage(message);
     }
 
     public void startServer() {
+        logger.log("Got port");
+        logger.log("Starting on " + port);
         MinecraftServer minecraftServer = MinecraftServer.init();
 
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
