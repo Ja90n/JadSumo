@@ -1,16 +1,23 @@
 package com.jadonvb.instances;
 
 import com.jadonvb.*;
+import com.jadonvb.enums.MessageType;
+import com.jadonvb.enums.ServerType;
+import com.jadonvb.messages.Message;
+import com.jadonvb.messages.MessageHandler;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.extras.velocity.VelocityProxy;
 import net.minestom.server.instance.AnvilLoader;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
+import net.minestom.server.timer.Task;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Server {
 
@@ -19,50 +26,49 @@ public class Server {
     private int port;
     private final Logger logger;
     private String ip;
-    private MessageHandler messageHandler;
+    private TimerTask portTask;
+    private boolean isRunning;
 
     public Server() {
         logger = new Logger("JadSumo");
         client = new Client(ServerType.GAME);
-        messageHandler = new MessageHandler(this);
+
+        isRunning = false;
+
+        MessageHandler messageHandler = new MessageHandler(this);
         client.addMessageListener(messageHandler);
+
         getAssignedPort();
-        port = -1;
-    }
-
-    private String getIP() {
-        try {
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress("google.com", 80));
-            String string = String.valueOf(socket.getLocalAddress());
-            socket.close();
-
-            StringBuilder stringBuilder = new StringBuilder(string);
-            stringBuilder.delete(0,1);
-
-            ip = stringBuilder.toString();
-            return stringBuilder.toString();
-        } catch (IOException ignore) {}
-        return null;
     }
 
     private void getAssignedPort() {
+        logger.log("hoihois");
+        portTask = new TimerTask() {
+            @Override
+            public void run() {
+                String ip = getIP();
+                if (getIP() == null) {
+                    return;
+                }
 
-        String ip = getIP();
-        if (getIP() == null) {
-            return;
-        }
+                Message message = new Message();
+                message.setType(MessageType.PORT_REQUEST);
+                message.setSender(ip);
+                message.setReceiver("velocity");
 
-        Message message = new Message();
-        message.setType(MessageTypes.PORT_REQUEST);
-        message.setSender(ip);
-        message.setReceiver("velocity");
+                client.sendMessage(message);
+                logger.log("Asked for port");
+            }
+        };
 
-        logger.log("Asked for port");
-        client.sendMessage(message);
+        long delay = 2500L;
+        Timer timer = new Timer();
+        timer.schedule(portTask, delay,1000);
     }
 
-    public void startServer() {
+    public void startMinecraftServer() {
+        isRunning = true;
+        portTask.cancel();
         logger.log("Got port");
         logger.log("Starting on " + port);
         MinecraftServer minecraftServer = MinecraftServer.init();
@@ -82,6 +88,22 @@ public class Server {
         new Events(MinecraftServer.getGlobalEventHandler(), instanceContainer, game);
     }
 
+    private String getIP() {
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress("google.com", 80));
+            String string = String.valueOf(socket.getLocalAddress());
+            socket.close();
+
+            StringBuilder stringBuilder = new StringBuilder(string);
+            stringBuilder.delete(0,1);
+
+            ip = stringBuilder.toString();
+            return stringBuilder.toString();
+        } catch (IOException ignore) {}
+        return null;
+    }
+
     public InstanceContainer getInstanceContainer() {
         return instanceContainer;
     }
@@ -96,5 +118,9 @@ public class Server {
 
     public String getIp() {
         return ip;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 }

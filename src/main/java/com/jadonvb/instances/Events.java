@@ -117,10 +117,12 @@ public class Events {
                         game.replayRound(winner);
                     }
                 }
-            } else{
-                logger.error("dit zou niet moeten gebeuren oeps");
-                System.exit(400);
+                return;
             }
+
+            logger.error("dit zou niet moeten gebeuren oeps");
+            System.exit(400);
+
         });
     }
 }
